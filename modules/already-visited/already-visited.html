@@ -1,7 +1,6 @@
 <script>
 (function(module) {
 
-
     if(window.location.pathname.match(/profile/g) != null)
     {
         var username = $('#basic_info_sn').text()
@@ -34,13 +33,13 @@
 
             if(typeof profiles_on_load[match_name] != "undefined")
             {
-                if(typeof profiles_on_load[match_name].visits  != "undefined"  && profiles_on_load[match_name].visits > 0)
+                if(module.db.get("already_visited_highlight") && typeof profiles_on_load[match_name].visits  != "undefined"  && profiles_on_load[match_name].visits > 0)
 
                 {
                     $("#"+dom_id).css('background-color', 'red')
                     $("#"+dom_id).children().css('background-color', 'red')
                 }
-                else{
+                else if(module.db.get("already_seen_highlight")){
                 $("#"+dom_id).css('background-color', 'yellow')
                 $("#"+dom_id).children().css('background-color', 'yellow')
                 }
@@ -57,7 +56,6 @@
         //latch on to any changes...
         //when new matches load, ideally we'd only fire check_matches once, but there is no easy event for that
         check_matches()
-        debugger;
         MutationObserver = window.MutationObserver || window.WebKitMutationObserver;
         var observer = new MutationObserver(function(mutations) {
             check_matches()
