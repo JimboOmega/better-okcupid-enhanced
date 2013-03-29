@@ -94,7 +94,7 @@
 					aso: /^\s*(\d+)\s*\/\s*(\w+)\s*\/\s*(\w+)\s*\/\s*(\w.+[^\s])\s*$/
 				},
 				summary = $("<div id='people-summary'></div>");
-			
+
 			people.each(function() {
 				var aso = regex.aso.exec($(this).find(".aso").text()),
 					age, gender, orientation, status;

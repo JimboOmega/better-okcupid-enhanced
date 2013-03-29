@@ -13,5 +13,10 @@
 		"id": "you-might-like",
 		"name": "You Might Like",
 		"description": "Provides additional settings for the You Might Like panel on the home screen."
-	}
+	},
+    {
+        "id": "already-visited",
+        "name": "Already Visited",
+        "description": "Shows matches you've already visited in a unique way"
+    }
 ]

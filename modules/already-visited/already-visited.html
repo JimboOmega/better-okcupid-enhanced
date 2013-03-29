@@ -1,0 +1,73 @@
+<script>
+(function(module) {
+
+
+    if(window.location.pathname.match(/profile/g) != null)
+    {
+        var username = $('#basic_info_sn').text()
+
+        var profiles = module.db.get("profiles") || {}
+        var this_user = profiles[username] || {}
+        if(typeof this_user.visits == 'undefined')
+        {
+            this_user.visits = 1
+        }
+        else
+        {
+            this_user.visits += 1
+        }
+        this_user.last_visited = new Date()
+        profiles[username] = this_user
+        module.db.set("profiles", profiles)
+    }
+    if(window.location.pathname.match(/match/g) != null)
+    {
+
+        //don't update the already seen object on the dom inserted event
+        //otherwise all the profiles already on the page will get marked
+        //instead, keep this copy out of scope
+        var profiles_on_load = module.db.get("profiles") || {}
+        var check_matches = function(){$.each($('.match_row'),function(index, val){
+
+            var dom_id = val.id
+            var match_name = dom_id.substring(4)
+
+            if(typeof profiles_on_load[match_name] != "undefined")
+            {
+                if(typeof profiles_on_load[match_name].visits  != "undefined"  && profiles_on_load[match_name].visits > 0)
+
+                {
+                    $("#"+dom_id).css('background-color', 'red')
+                    $("#"+dom_id).children().css('background-color', 'red')
+                }
+                else{
+                $("#"+dom_id).css('background-color', 'yellow')
+                $("#"+dom_id).children().css('background-color', 'yellow')
+                }
+            }
+            var profiles = module.db.get("profiles") || {}
+            var this_user = profiles[match_name] || {}
+            this_user.last_seen = new Date()
+            profiles[match_name] = this_user
+            module.db.set("profiles", profiles)
+
+            }
+
+        )}
+        //latch on to any changes...
+        //when new matches load, ideally we'd only fire check_matches once, but there is no easy event for that
+        check_matches()
+        debugger;
+        MutationObserver = window.MutationObserver || window.WebKitMutationObserver;
+        var observer = new MutationObserver(function(mutations) {
+            check_matches()
+        })
+        // configuration of the observer:
+        var config = { attributes: true, childList: true, characterData: true }
+
+// pass in the target node, as well as the observer options
+        observer.observe($('#match_results')[0], config);
+
+    }
+})(module);
+</script>

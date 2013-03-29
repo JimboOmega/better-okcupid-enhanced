@@ -45,7 +45,9 @@
 		"modules/recently-visited/defaults.json",
 		"modules/recently-visited/recently-visited.html",
 		"modules/you-might-like/defaults.json",
-		"modules/you-might-like/you-might-like.html"
+		"modules/you-might-like/you-might-like.html",
+        "modules/already-visited/defaults.json",
+        "modules/already-visited/already-visited.html"
 	],
 	
 	"permissions": [
