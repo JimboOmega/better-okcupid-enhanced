@@ -1,6 +1,5 @@
 <script>
 (function(module) {
-
     if(window.location.pathname.match(/profile/g) != null)
     {
         var username = $('#basic_info_sn').text()
@@ -21,16 +20,22 @@
     }
     if(window.location.pathname.match(/match/g) != null)
     {
-
         //don't update the already seen object on the dom inserted event
         //otherwise all the profiles already on the page will get marked
         //instead, keep this copy out of scope
         var profiles_on_load = module.db.get("profiles") || {}
         var check_matches = function(){$.each($('.match_row'),function(index, val){
-
             var dom_id = val.id
             var match_name = dom_id.substring(4)
 
+            if(module.db.get("low_match_hide"))
+            {
+                if($(val).find(".percentage").first().text().substring(0,2) < module.db.get("low_match_limit"))
+                {
+                    $(val).hide()
+                }
+
+            }
             if(typeof profiles_on_load[match_name] != "undefined")
             {
                 if(module.db.get("already_visited_highlight") && typeof profiles_on_load[match_name].visits  != "undefined"  && profiles_on_load[match_name].visits > 0)

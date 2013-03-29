@@ -46,8 +46,8 @@
 		"modules/recently-visited/recently-visited.html",
 		"modules/you-might-like/defaults.json",
 		"modules/you-might-like/you-might-like.html",
-        "modules/already-visited/defaults.json",
-        "modules/already-visited/already-visited.html"
+        "modules/match-search-enhancements/defaults.json",
+        "modules/match-search-enhancements/match-search-enhancements.html"
 	],
 	
 	"permissions": [
