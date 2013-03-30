@@ -20,11 +20,9 @@
     }
     if(window.location.pathname.match(/match/g) != null)
     {
-        //don't update the already seen object on the dom inserted event
-        //otherwise all the profiles already on the page will get marked
-        //instead, keep this copy out of scope
+        var profiles = module.db.get("profiles") || {}
+        //should I pre-load all the db values here so I don't have to get them in the loop?
 
-        var profiles_on_load = module.db.get("profiles") || {}
         var check_match = function(index, match_row){
             var dom_id = match_row.id
             var match_name = dom_id.substring(4)
@@ -39,30 +37,31 @@
                 }
 
             }
-            if(typeof profiles_on_load[match_name] != "undefined")
+            if(typeof profiles[match_name] != "undefined")
             {
-                if(module.db.get("already_visited_highlight") && typeof profiles_on_load[match_name].visits  != "undefined"  && profiles_on_load[match_name].visits > 0)
-
+                if(module.db.get("already_visited_highlight") && typeof profiles[match_name].visits  != "undefined"  && profiles[match_name].visits > 0)
                 {
                     $("#"+dom_id).css('background-color', 'red')
                     $("#"+dom_id).children().css('background-color', 'red')
                 }
+                //assumption - if user object exists, they must have been at least seen before
                 else if(module.db.get("already_seen_highlight")){
-                $("#"+dom_id).css('background-color', 'yellow')
-                $("#"+dom_id).children().css('background-color', 'yellow')
+                    $("#"+dom_id).css('background-color', 'yellow')
+                    $("#"+dom_id).children().css('background-color', 'yellow')
                 }
             }
-            //todo: getting and setting this on each match may be slow; instead, link to loads
-            var profiles = module.db.get("profiles") || {}
             var this_user = profiles[match_name] || {}
             this_user.last_seen = new Date()
+            if(typeof this_user.first_seen == 'undefined')
+            {
+                this_user.first_seen = new Date()
+            }
             profiles[match_name] = this_user
-            module.db.set("profiles", profiles)
-
         }
-
-
+        //check matches already on page
         $('.match_row').each(check_match)
+        module.db.set("profiles", profiles)
+
         MutationObserver = window.MutationObserver || window.WebKitMutationObserver;
         var observer = new MutationObserver(function(mutations) {
             mutations.forEach(function(mutation){
@@ -71,12 +70,11 @@
                 check_match(0,mutation.addedNodes[0])
             }
             })
-
+            //update profiles database only after processing all nodes
+            module.db.set("profiles", profiles)
         })
-        // configuration of the observer:
+        // configuration of the observer (may be unecessary)
         var config = { attributes: true, childList: true, characterData: true }
-
-// pass in the target node, as well as the observer options
         observer.observe($('#match_results')[0], config);
 
     }
