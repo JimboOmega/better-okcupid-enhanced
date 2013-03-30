@@ -23,16 +23,19 @@
         //don't update the already seen object on the dom inserted event
         //otherwise all the profiles already on the page will get marked
         //instead, keep this copy out of scope
+
         var profiles_on_load = module.db.get("profiles") || {}
-        var check_matches = function(){$.each($('.match_row'),function(index, val){
-            var dom_id = val.id
+        var check_match = function(index, match_row){
+            var dom_id = match_row.id
             var match_name = dom_id.substring(4)
 
             if(module.db.get("low_match_hide"))
             {
-                if($(val).find(".percentage").first().text().substring(0,2) < module.db.get("low_match_limit"))
+                percentage_string = $(match_row).find(".percentage").first().text()
+                number_string = percentage_string.substring(0,percentage_string.length - 1)
+                if(number_string < module.db.get("low_match_limit"))
                 {
-                    $(val).hide()
+                    $(match_row).hide()
                 }
 
             }
@@ -49,21 +52,26 @@
                 $("#"+dom_id).children().css('background-color', 'yellow')
                 }
             }
+            //todo: getting and setting this on each match may be slow; instead, link to loads
             var profiles = module.db.get("profiles") || {}
             var this_user = profiles[match_name] || {}
             this_user.last_seen = new Date()
             profiles[match_name] = this_user
             module.db.set("profiles", profiles)
 
-            }
+        }
 
-        )}
-        //latch on to any changes...
-        //when new matches load, ideally we'd only fire check_matches once, but there is no easy event for that
-        check_matches()
+
+        $('.match_row').each(check_match)
         MutationObserver = window.MutationObserver || window.WebKitMutationObserver;
         var observer = new MutationObserver(function(mutations) {
-            check_matches()
+            mutations.forEach(function(mutation){
+            if(mutation.addedNodes.length > 0 &&$(mutation.addedNodes).hasClass("match_row"))
+            {
+                check_match(0,mutation.addedNodes[0])
+            }
+            })
+
         })
         // configuration of the observer:
         var config = { attributes: true, childList: true, characterData: true }
