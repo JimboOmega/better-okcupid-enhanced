@@ -23,7 +23,6 @@
         //add the match %age filter
         initial_limit = module.db.get("low_match_limit", parseInt(this.value))
         $("#form_filters").first().append("<div class=\"form_element\"><input type=\"text\" class=\"integer\" id=\"low_match_limit\" data-setting=\"low_match_limit\" data-type=\"integer\" value=\"" + initial_limit + "\"/><label for=\"low_match_limit\">Lowest match %age to display in results</label></div>")
-        debugger;
         $('.integer').numeric(false);
         $('#low_match_limit').change(function(){
             module.db.set("low_match_limit", parseInt(this.value))
