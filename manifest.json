@@ -3,7 +3,7 @@
 	
 	"name": "BetterCupid",
 	"version": "0.7.4",
-	"description": "Enhances the functionality of the OkCupid website. This extension was written by a bored fan and is not endorsed by OkCupid.",
+	"description": "Enhances the functionality of the OkCupid website. This extension was created by users of the site and is not endorsed by OkCupid",
 	
 	"icons": {
 		"128": "res/icon128.png",
@@ -30,9 +30,16 @@
 				"libs/prototype.js",
 				"libs/jquery.js",
 				"libs/core.js",
+                "libs/date.format.js",
+                "libs/jquery.numeric.js",
+                "libs/spectrum.js",
 				"libs/Module.js",
 				"modules/load.js"
 			],
+            "css": [
+                "libs/spectrum.css"
+
+            ],
 			"run_at": "document_start"
 		}
 	],

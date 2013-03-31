@@ -20,13 +20,18 @@
     }
     if(window.location.pathname.match(/match/g) != null)
     {
-        var profiles = module.db.get("profiles") || {}
-        //should I pre-load all the db values here so I don't have to get them in the loop?
+        //add the match %age filter
+        initial_limit = module.db.get("low_match_limit", parseInt(this.value))
+        $("#form_filters").first().append("<div class=\"form_element\"><input type=\"text\" class=\"integer\" id=\"low_match_limit\" data-setting=\"low_match_limit\" data-type=\"integer\" value=\"" + initial_limit + "\"/><label for=\"low_match_limit\">Lowest match %age to display in results</label></div>")
+        debugger;
+        $('.integer').numeric(false);
+        $('#low_match_limit').change(function(){
+            module.db.set("low_match_limit", parseInt(this.value))
+            $('.match_row').each(check_hide)
+        })
 
-        var check_match = function(index, match_row){
-            var dom_id = match_row.id
-            var match_name = dom_id.substring(4)
 
+        var check_hide = function(index, match_row){
             if(module.db.get("low_match_hide"))
             {
                 percentage_string = $(match_row).find(".percentage").first().text()
@@ -35,20 +40,43 @@
                 {
                     $(match_row).hide()
                 }
+                else
+                {
+                    $(match_row).show()
+                }
 
             }
+        }
+
+
+        var profiles = module.db.get("profiles") || {}
+        var check_match = function(index, match_row){
+            var dom_id = match_row.id
+            var match_name = dom_id.substring(4)
+
+            check_hide(index, match_row)
+
             if(typeof profiles[match_name] != "undefined")
             {
                 if(module.db.get("already_visited_highlight") && typeof profiles[match_name].visits  != "undefined"  && profiles[match_name].visits > 0)
                 {
-                    $("#"+dom_id).css('background-color', 'red')
-                    $("#"+dom_id).children().css('background-color', 'red')
+                    $("#"+dom_id).css('background-color',module.db.get("already_visited_highlight_color"))
+                    $("#"+dom_id).children().css('background-color', module.db.get("already_visited_highlight_color"))
                 }
                 //assumption - if user object exists, they must have been at least seen before
                 else if(module.db.get("already_seen_highlight")){
-                    $("#"+dom_id).css('background-color', 'yellow')
-                    $("#"+dom_id).children().css('background-color', 'yellow')
+                    $("#"+dom_id).css('background-color', module.db.get("already_seen_highlight_color"))
+                    $("#"+dom_id).children().css('background-color', module.db.get("already_seen_highlight_color"))
                 }
+                if(typeof profiles[match_name].last_seen != 'undefined')
+                {
+                    $(match_row.children[0]).append("<div>Last Seen:" + (new Date(profiles[match_name].last_seen)).format("dddd, mmmm dS, yyyy, h:MM TT")+  "</div>")
+                }
+                if(typeof profiles[match_name].last_visited != 'undefined' )
+                {
+                    $(match_row.children[0]).append("<div >Last Visited:" +(new Date(profiles[match_name].last_visited)).format("dddd, mmmm dS, yyyy, h:MM TT") +  "</div>")
+                }
+
             }
             var this_user = profiles[match_name] || {}
             this_user.last_seen = new Date()

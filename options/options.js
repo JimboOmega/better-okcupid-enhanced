@@ -155,7 +155,11 @@ $(".switcher").switcher();
 		text: function(setting, module) {
 			this.value = module.db.get(setting);
 			$(this).change();
-		}
+		},
+        color: function(setting, module){
+            this.value = module.db.get(setting);
+            $(this).change();
+        }
 	};
 	
 	var onchange = {
@@ -171,7 +175,11 @@ $(".switcher").switcher();
 					val = parseFloat(val);
 			}
 			module.db.set(setting, val);
-		}
+		},
+        color: function(e, setting, module) {
+            module.db.set(setting, this.value);
+   		}
+
 	};
 	
 	function toggleEnabled(module) {
@@ -184,7 +192,8 @@ $(".switcher").switcher();
 		module_hash[module.id()] = module;
 		
 		page.find("[data-setting]").attr("data-module", module.id()).each(function() {
-			var f = init[this.type],
+
+            var f = init[this.type],
 				f2 = onchange[this.type],
 				setting = this.getAttribute("data-setting");
 			if ( f ) {
@@ -192,6 +201,7 @@ $(".switcher").switcher();
 			}
 			if ( f2 ) {
 				$(this).change(function(e) {
+                    debugger;
 					f2.call(this, e, setting, module);
 				});
 			}
