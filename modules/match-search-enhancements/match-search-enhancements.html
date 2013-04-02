@@ -1,3 +1,10 @@
+
+<div id="filter_options" class="form_element">
+    <input type="text" class="integer" id="low_match_limit" data-setting="low_match_limit" data-type="integer"><label for="low_match_limit">Lowest match %age to display in results</label>
+    <input type="checkbox" id="hide_messaged" data-setting="hide_messaged"/><label for="hide_messaged">Hide users you already messaged</label>
+
+</div>
+
 <script>
 (function(module) {
     if(window.location.pathname.match(/profile/g) != null)
@@ -20,31 +27,37 @@
     }
     if(window.location.pathname.match(/match/g) != null)
     {
-        //add the match %age filter
+        $("#filter_options").appendTo('#form_filters')
+        //initialize filters
         initial_limit = module.db.get("low_match_limit", parseInt(this.value))
-        $("#form_filters").first().append("<div class=\"form_element\"><input type=\"text\" class=\"integer\" id=\"low_match_limit\" data-setting=\"low_match_limit\" data-type=\"integer\" value=\"" + initial_limit + "\"/><label for=\"low_match_limit\">Lowest match %age to display in results</label></div>")
+        $('#low_match_limit')[0].value = initial_limit
         $('.integer').numeric(false);
+
+        $('#hide_messaged')[0].checked = module.db.get("hide_messaged", parseInt(this.value))
+        //set up monitoring on filters
         $('#low_match_limit').change(function(){
             module.db.set("low_match_limit", parseInt(this.value))
             $('.match_row').each(check_hide)
         })
+        $('#hide_messaged').change(function(){
+                module.db.set("hide_messaged", this.checked)
+                $('.match_row').each(check_hide)
+        })
 
 
         var check_hide = function(index, match_row){
-            if(module.db.get("low_match_hide"))
+            percentage_string = $(match_row).find(".percentage").first().text()
+            number_string = percentage_string.substring(0,percentage_string.length - 1)
+            if((module.db.get("low_match_hide") && number_string < module.db.get("low_match_limit")) || (module.db.get("hide_messaged") && $(match_row).find('.contacted').length > 0))
             {
-                percentage_string = $(match_row).find(".percentage").first().text()
-                number_string = percentage_string.substring(0,percentage_string.length - 1)
-                if(number_string < module.db.get("low_match_limit"))
-                {
-                    $(match_row).hide()
-                }
-                else
-                {
-                    $(match_row).show()
-                }
-
+              $(match_row).hide()
             }
+            else
+            {
+              $(match_row).show()
+            }
+
+
         }
 
 
