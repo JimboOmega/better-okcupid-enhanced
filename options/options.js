@@ -201,7 +201,6 @@ $(".switcher").switcher();
 			}
 			if ( f2 ) {
 				$(this).change(function(e) {
-                    debugger;
 					f2.call(this, e, setting, module);
 				});
 			}

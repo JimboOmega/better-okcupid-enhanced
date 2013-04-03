@@ -1,9 +1,21 @@
 
 <div id="filter_options" class="form_element">
-    <input type="text" class="integer" id="low_match_limit" data-setting="low_match_limit" data-type="integer"><label for="low_match_limit">Lowest match %age to display in results</label>
-    <input type="checkbox" id="hide_messaged" data-setting="hide_messaged"/><label for="hide_messaged">Hide users you already messaged</label>
-
+    <div>
+        <input type="text" class="integer" id="low_match_limit" data-setting="low_match_limit" data-type="integer"><label for="low_match_limit">Lowest match %age to display in results</label>
+    </div>
+    <div>
+        <input type="checkbox" id="hide_messaged" data-setting="hide_messaged"/><label for="hide_messaged">Hide users you already messaged</label>
+    </div>
+    <div>
+        <input type="checkbox" id="already_visited_highlight" data-setting="already_visited_highlight"/><label for="already_visited_highlight">Highlight already visited profiles in selected color</label>
+        <input type='color' id="already_visited_highlight_color" data-setting="already_visited_highlight_color" />
+    </div>
+    <div class="setting">
+        <input type="checkbox" id="already_seen_highlight" data-setting="already_seen_highlight"/><label for="already_seen_highlight">Highlight already seen (in match results) profiles in selected color</label>
+        <input type='color' id="already_seen_highlight_color" data-setting="already_seen_highlight_color" />
+    </div>
 </div>
+
 
 <script>
 (function(module) {
@@ -25,27 +37,71 @@
         profiles[username] = this_user
         module.db.set("profiles", profiles)
     }
+
+
     if(window.location.pathname.match(/match/g) != null)
     {
-        $("#filter_options").appendTo('#form_filters')
-        //initialize filters
-        initial_limit = module.db.get("low_match_limit", parseInt(this.value))
-        $('#low_match_limit')[0].value = initial_limit
+        //force the one integer field to be numeric (this code doesn't seem to have a home)
         $('.integer').numeric(false);
+        //move the panel somewhere visible
+        $("#filter_options").insertAfter('#matchform')
+        //copied from options.js - may want to dry this up
+        var init = {
+            checkbox: function(setting, module) {
+                this.checked = module.db.get(setting);
+                $(this).change();
+            },
+            text: function(setting, module) {
+                this.value = module.db.get(setting);
+                $(this).change();
+            },
+            color: function(setting, module){
+                this.value = module.db.get(setting);
+                $(this).change();
+            }
+        };
 
-        $('#hide_messaged')[0].checked = module.db.get("hide_messaged", parseInt(this.value))
-        //set up monitoring on filters
-        $('#low_match_limit').change(function(){
-            module.db.set("low_match_limit", parseInt(this.value))
-            $('.match_row').each(check_hide)
-        })
-        $('#hide_messaged').change(function(){
-                module.db.set("hide_messaged", this.checked)
-                $('.match_row').each(check_hide)
-        })
+        var onchange = {
+            checkbox: function(e, setting, module) {
+                module.db.set(setting, this.checked);
+                $('.match_row').each(check_match) // TODO: Be smarter about this
+            },
+            text: function(e, setting, module) {
+                var val = this.value;
+                switch ( this.getAttribute("data-type") ) {
+                    case "integer":
+                        val = parseInt(val);
+                    case "float":
+                        val = parseFloat(val);
+                }
+                module.db.set(setting, val);
+                $('.match_row').each(check_match)
+            },
+            color: function(e, setting, module) {
+                module.db.set(setting, this.value);
+                $('.match_row').each(check_match)
+            }
+
+        };
+
+        $("#filter_options").find("[data-setting]").attr("data-module", module.id()).each(function() {
+
+            var f = init[this.type],
+                    f2 = onchange[this.type],
+                    setting = this.getAttribute("data-setting");
+            if ( f ) {
+                f.call(this, setting, module);
+            }
+            if ( f2 ) {
+                $(this).change(function(e) {
+                    f2.call(this, e, setting, module);
+                });
+            }
+        });
 
 
-        var check_hide = function(index, match_row){
+
+        var update_visibility = function(match_row){
             percentage_string = $(match_row).find(".percentage").first().text()
             number_string = percentage_string.substring(0,percentage_string.length - 1)
             if((module.db.get("low_match_hide") && number_string < module.db.get("low_match_limit")) || (module.db.get("hide_messaged") && $(match_row).find('.contacted').length > 0))
@@ -56,19 +112,14 @@
             {
               $(match_row).show()
             }
-
-
         }
 
 
-        var profiles = module.db.get("profiles") || {}
-        var check_match = function(index, match_row){
+        var update_color = function(match_row, profiles)
+        {
             var dom_id = match_row.id
             var match_name = dom_id.substring(4)
-
-            check_hide(index, match_row)
-
-            if(typeof profiles[match_name] != "undefined")
+            if(typeof initial_profiles[match_name] != "undefined")
             {
                 if(module.db.get("already_visited_highlight") && typeof profiles[match_name].visits  != "undefined"  && profiles[match_name].visits > 0)
                 {
@@ -80,16 +131,33 @@
                     $("#"+dom_id).css('background-color', module.db.get("already_seen_highlight_color"))
                     $("#"+dom_id).children().css('background-color', module.db.get("already_seen_highlight_color"))
                 }
-                if(typeof profiles[match_name].last_seen != 'undefined')
+                else
                 {
-                    $(match_row.children[0]).append("<div>Last Seen:" + (new Date(profiles[match_name].last_seen)).format("dddd, mmmm dS, yyyy, h:MM TT")+  "</div>")
+                    $("#"+dom_id).css('background-color', "")
+                    $("#"+dom_id).children().css('background-color', "")
                 }
-                if(typeof profiles[match_name].last_visited != 'undefined' )
+                if(typeof initial_profiles[match_name].last_seen != 'undefined' && $(match_row).find(".last_seen").length < 1)
                 {
-                    $(match_row.children[0]).append("<div >Last Visited:" +(new Date(profiles[match_name].last_visited)).format("dddd, mmmm dS, yyyy, h:MM TT") +  "</div>")
+                    $(match_row.children[0]).append("<div class=\"last_seen\">Last Seen:" + (new Date(initial_profiles[match_name].last_seen)).format("dddd, mmmm dS, yyyy, h:MM TT")+  "</div>")
                 }
-
+                if(typeof initial_profiles[match_name].last_visited != 'undefined' && $(match_row).find(".last_visited").length < 1 )
+                {
+                    $(match_row.children[0]).append("<div class=\"last_visited\">Last Visited:" +(new Date(initial_profiles[match_name].last_visited)).format("dddd, mmmm dS, yyyy, h:MM TT") +  "</div>")
+                }
             }
+        }
+
+
+
+
+        var check_match = function(index, match_row){
+            var dom_id = match_row.id
+            var match_name = dom_id.substring(4)
+
+            update_visibility(match_row)
+            update_color(match_row,profiles)
+
+
             var this_user = profiles[match_name] || {}
             this_user.last_seen = new Date()
             if(typeof this_user.first_seen == 'undefined')
@@ -98,6 +166,12 @@
             }
             profiles[match_name] = this_user
         }
+
+        var profiles = module.db.get("profiles") || {}
+
+        //keep this around because we don't want to display updated last seen times as the user changes filter settings
+        var initial_profiles = module.db.get("profiles") || {}
+
         //check matches already on page
         $('.match_row').each(check_match)
         module.db.set("profiles", profiles)
