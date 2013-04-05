@@ -1,5 +1,5 @@
 
-<div id="filter_options" class="form_element">
+<div id="filter_options" class="form_element" style="display:none">
     <div>
         <input type="text" class="integer" id="low_match_limit" data-setting="low_match_limit" data-type="integer"><label for="low_match_limit">Lowest match %age to display in results</label>
     </div>
@@ -45,6 +45,7 @@
         //force the one integer field to be numeric (this code doesn't seem to have a home)
         $('.integer').numeric(false);
         //move the panel somewhere visible
+        $("#filter_options").show()
         $("#filter_options").insertAfter('#matchform')
         //copied from options.js - may want to dry this up
         var init = {
