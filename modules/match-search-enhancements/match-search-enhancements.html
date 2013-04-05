@@ -7,6 +7,7 @@
         <input type="checkbox" id="hide_messaged" data-setting="hide_messaged"/><label for="hide_messaged">Hide users you already messaged</label>
     </div>
     <div>
+        <input type="checkbox" id="hide_already_visited" data-setting="hide_already_visited"/><label for="hide_already_visited">Hide already visited profiles</label><br/>
         <input type="checkbox" id="already_visited_highlight" data-setting="already_visited_highlight"/><label for="already_visited_highlight">Highlight already visited profiles in selected color</label>
         <input type='color' id="already_visited_highlight_color" data-setting="already_visited_highlight_color" />
     </div>
@@ -102,9 +103,13 @@
 
 
         var update_visibility = function(match_row){
-            percentage_string = $(match_row).find(".percentage").first().text()
-            number_string = percentage_string.substring(0,percentage_string.length - 1)
-            if((module.db.get("low_match_hide") && number_string < module.db.get("low_match_limit")) || (module.db.get("hide_messaged") && $(match_row).find('.contacted').length > 0))
+            var dom_id = match_row.id
+            var match_name = dom_id.substring(4)
+            var percentage_string = $(match_row).find(".percentage").first().text()
+            var number_string = percentage_string.substring(0,percentage_string.length - 1)
+            if(module.db.get("low_match_hide") && number_string < module.db.get("low_match_limit") ||
+                    module.db.get("hide_messaged") && $(match_row).find('.contacted').length > 0 ||
+                    module.db.get("hide_already_visited") && typeof initial_profiles[match_name].visits  != "undefined")
             {
               $(match_row).hide()
             }
@@ -121,7 +126,7 @@
             var match_name = dom_id.substring(4)
             if(typeof initial_profiles[match_name] != "undefined")
             {
-                if(module.db.get("already_visited_highlight") && typeof profiles[match_name].visits  != "undefined"  && profiles[match_name].visits > 0)
+                if(module.db.get("already_visited_highlight") && typeof initial_profiles[match_name].visits  != "undefined"  && initial_profiles[match_name].visits > 0)
                 {
                     $("#"+dom_id).css('background-color',module.db.get("already_visited_highlight_color"))
                     $("#"+dom_id).children().css('background-color', module.db.get("already_visited_highlight_color"))
