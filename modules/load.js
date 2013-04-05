@@ -39,6 +39,7 @@
 										$(document.body).append(container);
 										delete window.module;
 									} catch ( error ) {
+                                        debugger
 										console.error("An error occured injecting the "+mod.name()+" module", error);
 									}
 								},

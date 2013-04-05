@@ -109,7 +109,7 @@
             var number_string = percentage_string.substring(0,percentage_string.length - 1)
             if(module.db.get("low_match_hide") && number_string < module.db.get("low_match_limit") ||
                     module.db.get("hide_messaged") && $(match_row).find('.contacted').length > 0 ||
-                    module.db.get("hide_already_visited") && typeof initial_profiles[match_name].visits  != "undefined")
+                    module.db.get("hide_already_visited") && typeof initial_profiles[match_name] != "undefined" && typeof initial_profiles[match_name].visits  != "undefined" && typeof initial_profiles[match_name].visits  != "undefined")
             {
               $(match_row).hide()
             }
